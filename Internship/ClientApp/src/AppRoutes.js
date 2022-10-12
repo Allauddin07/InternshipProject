@@ -1,20 +1,26 @@
-import { Counter } from "./components/Customer";
-import { FetchData } from "./components/FetchData";
-import { Home } from "./components/Home";
+import Customer from "./components/Customer";
+import Product from "./components/Product";
+import Store from "./components/Store";
+import Sales from "./components/Sales";
 
 const AppRoutes = [
   {
-    index: true,
-    element: <Home />
+        index: true,
+        element: <Customer />
   },
+  
   {
-    path: '/counter',
-    element: <Counter />
-  },
-  {
-    path: '/fetch-data',
-    element: <FetchData />
-  }
+    path: '/product',
+    element: <Product />
+   },
+    {
+        path: '/store',
+        element: <Store />
+    },
+    {
+        path: '/sales',
+        element: <Sales />
+    }
 ];
 
 export default AppRoutes;

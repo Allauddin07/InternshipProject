@@ -40,7 +40,7 @@ namespace Internship.Controllers
 
         // GET:  Get Single Store---------->
          
-        [HttpGet("singlecustomer/{id:int}")]
+        [HttpGet("singlestore/{id:int}")]
         public async Task<ActionResult> Details([FromRoute] int? id)
         {
             try

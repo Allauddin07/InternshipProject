@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Internship"
+    "\\Internship",
+    "\\Internship\\Controllers",
+    "\\Internship\\Infrastructure",
+    "\\Internship\\Infrastructure\\Irepository",
+    "\\Internship\\Infrastructure\\Repository"
   ],
+  "SelectedNode": "\\Internship.sln",
   "PreviewInSolutionExplorer": false
 }

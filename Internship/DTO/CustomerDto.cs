@@ -11,6 +11,6 @@ namespace Internship.DTO
         [Required(ErrorMessage = "Please Enter Address")]
         public string Address { get; set; }
 
-        public ICollection<Sales>? Sales { get; set; }
+        public List<Sales>? sale { get; set; }
     }
 }

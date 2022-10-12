@@ -4,7 +4,7 @@ namespace BackendApp.Infrastructure.Irepository
 {
     public interface ICustomer
     { 
-        IEnumerable<Customer> GetAllAsync();
+        Task<IEnumerable<Customer>> GetAllAsync();
 
         Task<Customer> GetAsync(int? id);
 

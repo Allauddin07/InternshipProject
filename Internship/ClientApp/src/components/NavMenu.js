@@ -6,7 +6,7 @@ import './NavMenu.css';
 export class NavMenu extends Component {
   static displayName = NavMenu.name;
 
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.toggleNavbar = this.toggleNavbar.bind(this);
@@ -15,7 +15,7 @@ export class NavMenu extends Component {
     };
   }
 
-  toggleNavbar () {
+  toggleNavbar() {
     this.setState({
       collapsed: !this.state.collapsed
     });
@@ -23,20 +23,24 @@ export class NavMenu extends Component {
 
   render() {
     return (
-      <header>
+      <header className='menu'>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
-          <NavbarBrand tag={Link} to="/">Internship</NavbarBrand>
+          <NavbarBrand tag={Link} to="/">React</NavbarBrand>
           <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
             <ul className="navbar-nav flex-grow">
-              <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
+
+              <NavItem className='item'>
+                <NavLink tag={Link} className="text-dark" to="/">Customer</NavLink>
               </NavItem>
-              <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/counter">Counter</NavLink>
+              <NavItem className='item'>
+                <NavLink tag={Link} className="text-dark" to="/product">Product</NavLink>
               </NavItem>
-              <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/fetch-data">Fetch data</NavLink>
+              <NavItem className='item'>
+                <NavLink tag={Link} className="text-dark" to="/store">Store</NavLink>
+              </NavItem>
+              <NavItem className='item'>
+                <NavLink tag={Link} className="text-dark" to="/sales">Sales</NavLink>
               </NavItem>
             </ul>
           </Collapse>

@@ -13,6 +13,6 @@ namespace BackendApp.Model
         [Required(ErrorMessage = "Please Enter Address")]
         public string Address { get; set; }
 
-        public ICollection<Sales>? Sales { get; set; }
+        public ICollection<Sales>? sale { get; set; }
     }
 }

@@ -5,9 +5,9 @@ namespace BackendApp.Infrastructure.Irepository
 {
     public interface ISales
     {
-        Task<IEnumerable<SalesDto>> GetAllAsync();
+       Task<IEnumerable<SalesDto>> GetAllAsync();
 
-        Task<Sales> GetAsync(int? id);
+        Task<SalesDto> GetAsync(int? id);
 
         Task<bool> UpdateAsync(int? id, Sales sale);
 

@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import CreateCustomerModal from './CreateCustomerModal';
-import DeleteModel from './DeleteModel';
+﻿import React, { useEffect, useRef, useState } from 'react';
+import DeleteModel from './DeleteModel'
 import { Button, Modal, Form } from 'semantic-ui-react'
 
-//import { updateLanguageServiceSourceFile } from 'typescript';
+import CreateProductModal from './CreateProductModal';
 
 
 function exampleReducer(state, action) {
@@ -17,41 +16,33 @@ function exampleReducer(state, action) {
     }
 }
 
-function Customer() {
 
-    const CustomerId = useRef();
+
+
+function Product() {
+
+    const productId = useRef();
     const [name, setName]= useState({name:null})
-
-   // localStorage.setItem("id", JSON.stringify(CustomerId))
-
-
-
-
 
     const [arr, setarr] = useState([])
 
-    console.log(arr)
-    
+    const [modalShow, setModalShow] = useState(false);
+    const [product, setProduct] = useState(false)
 
-    const [st, setSt] = useState({
+    const [dt, setData] = useState({
         id: null,
         name: null,
-        address: null
+        price: null
     })
-
-    const [modalShow, setModalShow] = useState(false);
-
-    const [customer, setCustomer] = useState(false)
 
 
     const handleChange = (e) => {
 
 
-
-        setSt((st) => {
+        setData((dt) => {
 
             return {
-                ...st,
+                ...dt,
                 [e.target.name]: e.target.value
             }
 
@@ -59,16 +50,64 @@ function Customer() {
 
 
 
+
+
+
+
+
     }
 
-    async function updateCustomer() {
+    async function singleProduct(id) {
+        console.log(id)
+
+        const data = await fetch(`https://localhost:7144/api/product/singleproduct/${id}`, {
+
+            method: "get",
+
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "Access-Control-Allow-Credentials": true,
+                'Access-Control-Allow-Origin': '*',
+
+
+
+            }
+
+
+        })
+        console.log(data)
+        const res = await data.json()
+        console.log(res)
+
+        setData({
+            id: res.productId,
+            name: res.name,
+            price: res.price
+        })
+
+
+
+
+
+    }
+
+    function productDetail(id, show) {
+
+        singleProduct(id)
+        show()
+
+    }
+
+
+    async function updateProduct() {
 
         const body = {
-            name: st.name,
-            address: st.address
+            name: dt.name,
+            price: dt.price
         }
 
-        const data = await fetch(`https://localhost:7144/api/customer/update/${st.id}`, {
+        const data = await fetch(`https://localhost:7144/api/product/update/${dt.id}`, {
 
             method: "put",
 
@@ -88,13 +127,21 @@ function Customer() {
         console.log(res)
         //setarr(res)
         fetchdata()
+        setData({
+            id: null,
+            name: null,
+            price: null
+        })
         setModalShow(false)
 
     }
 
+
+
+
     async function fetchdata() {
 
-        const data = await fetch("https://localhost:7144/api/customer/getall", {
+        const data = await fetch('https://localhost:7144/api/product/getall', {
 
             method: "get",
 
@@ -119,9 +166,9 @@ function Customer() {
 
     async function del(id) {
 
+        console.log(id)
 
-
-        const data = await fetch(`https://localhost:7144/api/customer/delete/${id}`, {
+        const data = await fetch(`https://localhost:7144/api/product/delete/${id}`, {
 
             method: "delete",
 
@@ -141,54 +188,14 @@ function Customer() {
         fetchdata()
 
     }
-    async function singleCustomer(id) {
-        console.log(id)
-
-        const data = await fetch(`https://localhost:7144/api/customer/singlecustomer/${id}`, {
-
-            method: "get",
-
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Credentials": true,
-                'Access-Control-Allow-Origin': '*',
 
 
 
-            }
-
-
-        })
-        console.log(data)
-        const res = await data.json()
-        console.log(res)
-
-        setSt({
-            id: res.customerId,
-            name: res.name,
-            address: res.address
-        })
-
-
-
-
-
-    }
-
-
-    function getSingle(id, fun) {
-        singleCustomer(id)
-        //setModalShow(true)
-        fun()
-    }
-
-
-    const deleteCustomer = (id) => {
+    const deleteProduct = (id) => {
 
         dispatch({ type: 'open', size: 'small' })
-        CustomerId.current = id
-        
+        productId.current = id
+       
 
     }
 
@@ -202,30 +209,22 @@ function Customer() {
 
     useEffect(() => {
         fetchdata()
-       
 
     }, [])
 
 
-    
-
-
-
-
-
     return (
-
         <div className='ui container'>
             <Button positive onClick={() =>
 
-                setCustomer(true)}>
-                Create Customer
+                setProduct(true)}>
+                Create Product
             </Button>
             <table className="ui celled table">
                 <thead className="">
                     <tr className="">
                         <th className="">Name</th>
-                        <th className="">Address</th>
+                        <th className="">Price</th>
                         <th className="">Action</th>
                         <th className="">Action</th>
                     </tr>
@@ -233,28 +232,44 @@ function Customer() {
                 <tbody className="">
 
                     {
-                        arr.map((val) => {
+
+                        arr.map((val, id) => {
                             return (
 
-                                <tr key={val.customerId} className="">
+                                <tr key={val.productId} className="">
                                     <td className="">{val.name}</td>
-                                    <td className="">{val.address}</td>
-                                    <td className=""><Button style={{backgroundColor:'orange'}} onClick={() =>
-
-                                        getSingle(val.customerId, () => setModalShow(true))}>
-                                            <i className="fa-solid fa-pen-to-square" ></i> 
-                                            &nbsp; Edit</Button></td>
+                                    <td className="">{val.price}</td>
 
 
-                                    <td className=""><Button style={{backgroundColor:'orangered'}} 
-                                    onClick={() =>{
-                                        deleteCustomer(val.customerId)
-                                        setName({name:val.name})
-                                        }}>
+
+
+
+
+                                    <td>
+                                        <Button style={{ backgroundColor: 'orange' }} onClick={() => productDetail(val.productId, setModalShow(true))}>
+                                            <i className="fa-solid fa-pen-to-square"></i>
+
+                                            &nbsp; Eidt
+                                        </Button>
+                                    </td>
+
+                                    <td>
+                                        <Button style={{ backgroundColor: 'orangered' }} onClick={() =>{
+                                            deleteProduct(val.productId)
+                                            setName({name:val.name})
+                                            
+                                            }}>
                                             <i className="fa-solid fa-trash"></i>
-                                       &nbsp; Delete
-                                    </Button></td>
+                                            &nbsp;  Delete
+                                        </Button>
+                                    </td>
+
+
+
+
+
                                 </tr>
+
                             )
                         })
                     }
@@ -263,31 +278,25 @@ function Customer() {
                 </tbody>
             </table>
 
-            <DeleteModel
-            name={name.name}
-header={'Delete Customer'}
-            customerId={CustomerId.current}
 
-                delete={() => del(CustomerId.current)}
+
+
+            <DeleteModel
+                name={name.name}
+                header={'Delete Product'}
+
+                delete={() => del(productId.current)}
                 open={open}
                 size={size}
                 onClose={() => dispatch({ type: 'close' })} />
 
-            <CreateCustomerModal
-                name={'Address'}
-                api={'customer'}
-                open={customer}
-                size={'small'}
+            <CreateProductModal
                 fetch={() => fetchdata()}
-                onClose={() =>
-
-                    setCustomer(false)} />
 
 
-
-
-
-
+                open={product}
+                size={'small'}
+                onClose={() => setProduct(false)} />
 
 
 
@@ -306,18 +315,18 @@ header={'Delete Customer'}
             >
                 <Modal.Header>Delete Your Account</Modal.Header>
                 <Modal.Content>
-                    <Form.Input fluid name="name" label="Name"  value={st.name} placeholder="Name" onChange={handleChange} />
-                    <Form.Input fluid name="address" label="Address" value={st.address} onChange={handleChange} placeholder="Address" />
+                    <Form.Input fluid name="name" label="Name" value={dt.name} placeholder="Name" onChange={handleChange} />
+                    <Form.Input fluid name="price" label="$ Price" value={dt.price} onChange={handleChange} placeholder="Price" />
                 </Modal.Content>
                 {/* <Modal.Description>
-                    <div className='contact_form_class'>
+                    <div NameName='contact_form_class'>
                         <div className='d-flex mb-5 mt-3'>
 
                             <div className='align-self-center '>
                                 <i className="fa-solid fa-envelope"></i>
                             </div>
                             <div className="form-group  flex-grow-1">
-                                <input type="text" value={st.name} name="name" onChange={handleChange} />
+                                <input type="text" value={dt.name} name="name" onChange={handleChange} />
                                 <label >Name </label>
                             </div>
 
@@ -329,8 +338,8 @@ header={'Delete Customer'}
                                 <i className="fa-solid fa-envelope"></i>
                             </div>
                             <div className="form-group  flex-grow-1">
-                                <input type="text" value={st.address} name="address" onChange={handleChange} />
-                                <label >Address </label>
+                                <input type="text" value={dt.price} name="price" onChange={handleChange} />
+                                <label >price </label>
                             </div>
 
                         </div>
@@ -346,7 +355,7 @@ header={'Delete Customer'}
                     </Button>
                     <Button positive onClick={() =>
 
-                        updateCustomer()}>
+                        updateProduct()}>
                         Yes
                     </Button>
                 </Modal.Actions>
@@ -355,12 +364,7 @@ header={'Delete Customer'}
 
 
         </ div>
-
     );
 
 }
-
-export default Customer
-
-
-
+export default Product

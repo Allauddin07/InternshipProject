@@ -1,6 +1,8 @@
 ﻿using BackendApp.DataBaseContext;
 using BackendApp.Infrastructure.Irepository;
 using BackendApp.Model;
+using Internship.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackendApp.Infrastructure.Repository
 {
@@ -23,7 +25,7 @@ namespace BackendApp.Infrastructure.Repository
 
         public async Task<bool> DeleteAsync(int? id)
         {
-            var customer = await _dbCntxt.customers.FindAsync(id);
+            var customer = await _dbCntxt.customers.Include(x => x.sale).FirstOrDefaultAsync(x=>x.CustomerId==id);
 
             if(customer != null)
             {
@@ -33,24 +35,26 @@ namespace BackendApp.Infrastructure.Repository
             return false;
         }
 
-        public  IEnumerable<Customer> GetAllAsync()  
+        public async Task<IEnumerable<Customer>> GetAllAsync()  
         {
-            //var customer =  _dbCntxt.customers.ToList();
-            var sales = _dbCntxt.sales.ToList();
-            var customer = _dbCntxt.customers.ToList();
+            var customer =  await _dbCntxt.customers.Include(s=>s.sale).ToListAsync();
+           // var customer =  await _dbCntxt.customers.ToListAsync();
 
-            var cust = customer.Join(sales, st => st.CustomerId,
-                sl => sl.SalesId,
-                (st, sl) => new Customer
-                {
-                    Name = st.Name,
-                    Address = st.Address,
-                    //Sales = sl.DateSold
-                }).ToList();
+            //var sales = _dbCntxt.sales.ToList();
+            //var cust =  _dbCntxt.customers.ToList();
 
-            if(cust != null)
+            //var customer = cust.Join(sales, st => st.CustomerId,
+            //    sl => sl.SalesId,
+            //    (st, sl) => new Customer
+            //    {
+            //        Name = st.Name,
+            //        Address = st.Address,
+            //        //sale = sl.DateSold
+            //    }).ToList();
+
+            if (customer != null)
             {
-                return cust;
+                return customer;
             }
             return null;
         }       

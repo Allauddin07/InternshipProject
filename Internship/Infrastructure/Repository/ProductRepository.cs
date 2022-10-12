@@ -1,6 +1,7 @@
 ﻿using BackendApp.DataBaseContext;
 using BackendApp.Infrastructure.Irepository;
 using BackendApp.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackendApp.Infrastructure.Repository
 {
@@ -23,19 +24,22 @@ namespace BackendApp.Infrastructure.Repository
 
         public async Task<bool> DeleteAsync(int? id)
         {
-            var product = await _dbCntxt.products.FindAsync(id);
+            var product = await _dbCntxt.products.Include(x=>x.Sales).FirstOrDefaultAsync(s=>s.ProductId==id);
 
             if (product != null)
             {
                 _dbCntxt.products.Remove(product);
                 return true;
             }
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         public async Task<ICollection<Product>> GetAllAsync()
         {
-            var product = _dbCntxt.products.ToList();
+            var product = await _dbCntxt.products.Include(x=>x.Sales).ToListAsync();
 
             if (product != null)
             {

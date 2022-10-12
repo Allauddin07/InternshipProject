@@ -2,6 +2,8 @@
 using BackendApp.Infrastructure.Irepository;
 using BackendApp.Model;
 using Internship.DTO;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace BackendApp.Infrastructure.Repository
 {
@@ -36,8 +38,8 @@ namespace BackendApp.Infrastructure.Repository
 
         public async Task<IEnumerable<SalesDto>> GetAllAsync()
         {
-            var sal = _dbCntxt.sales.ToList();
-            var cust = _dbCntxt.customers.ToList();
+            var sal =  _dbCntxt.sales.ToList();
+            var cust =  _dbCntxt.customers.ToList();
             var prod = _dbCntxt.products.ToList();
             var store = _dbCntxt.stores.ToList();
 
@@ -51,14 +53,11 @@ namespace BackendApp.Infrastructure.Repository
                        on s.StoreId equals st.StoreId
                        select new SalesDto
                        {
-                           customer =cus.Name,
-                           product=pr.Name,
-                           store=st.Name,
-                           DateSold= s.DateSold,
-
-
-
-
+                           saleId = s.SalesId,
+                           customer = cus.Name,
+                           product = pr.Name,
+                           store = st.Name,
+                           DateSold = s.DateSold,
 
 
                        }).ToList();
@@ -70,14 +69,28 @@ namespace BackendApp.Infrastructure.Repository
             return null;
         }
 
-        public async Task<Sales> GetAsync(int? id)
+        public async Task<SalesDto> GetAsync(int? id)
         {
             var sale = await _dbCntxt.sales.FindAsync(id);
+            var cust = await _dbCntxt.customers.FindAsync(sale.CustomerId);
+            var prod = await _dbCntxt.products.FindAsync(sale.ProductId);
+            var st = await _dbCntxt.stores.FindAsync(sale.StoreId);
 
-            if (sale != null)
+            var sales = new SalesDto() {
+                saleId = sale.SalesId,
+                customerId = cust.CustomerId,
+                customer=cust.Name,
+                productId=prod.ProductId,
+                product=prod.Name,
+                storeId=st.StoreId,
+                store=st.Name,
+                DateSold=sale.DateSold,
+            };
+
+            if (sales != null)
             {
 
-                return sale;
+                return sales;
             }
             return null;
 

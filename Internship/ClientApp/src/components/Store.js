@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import CreateCustomerModal from './CreateCustomerModal';
+import CreateStoreModal from './CreateStoreModal';
 import DeleteModel from './DeleteModel';
 import { Button, Modal, Form } from 'semantic-ui-react'
-
-//import { updateLanguageServiceSourceFile } from 'typescript';
-
 
 function exampleReducer(state, action) {
     switch (action.type) {
@@ -16,24 +13,12 @@ function exampleReducer(state, action) {
             throw new Error('Unsupported action...')
     }
 }
-
-function Customer() {
-
-    const CustomerId = useRef();
+function Store()
+{
+    const StoreId = useRef();
     const [name, setName]= useState({name:null})
-
-   // localStorage.setItem("id", JSON.stringify(CustomerId))
-
-
-
-
-
-    const [arr, setarr] = useState([])
-
-    console.log(arr)
-    
-
-    const [st, setSt] = useState({
+    const [store, setStore] = useState([])
+    const [update, setUpdate] = useState({
         id: null,
         name: null,
         address: null
@@ -41,17 +26,17 @@ function Customer() {
 
     const [modalShow, setModalShow] = useState(false);
 
-    const [customer, setCustomer] = useState(false)
+    const [modal, setModal] = useState(false)
 
 
     const handleChange = (e) => {
 
 
 
-        setSt((st) => {
+        setUpdate((update) => {
 
             return {
-                ...st,
+                ...update,
                 [e.target.name]: e.target.value
             }
 
@@ -61,14 +46,14 @@ function Customer() {
 
     }
 
-    async function updateCustomer() {
+    async function updateStore() {
 
         const body = {
-            name: st.name,
-            address: st.address
+            name: update.name,
+            address: update.address
         }
 
-        const data = await fetch(`https://localhost:7144/api/customer/update/${st.id}`, {
+        const data = await fetch(`https://localhost:7144/api/store/update/${update.id}`, {
 
             method: "put",
 
@@ -94,7 +79,7 @@ function Customer() {
 
     async function fetchdata() {
 
-        const data = await fetch("https://localhost:7144/api/customer/getall", {
+        const data = await fetch('https://localhost:7144/api/store/getall', {
 
             method: "get",
 
@@ -111,17 +96,17 @@ function Customer() {
 
         const res = await data.json()
         console.log(res.result)
-        setarr(res.result)
+        setStore(res.result)
 
     }
 
 
 
-    async function del(id) {
+    async function del_Store(id) {
 
 
 
-        const data = await fetch(`https://localhost:7144/api/customer/delete/${id}`, {
+        const data = await fetch(`https://localhost:7144/api/store/delete/${id}`, {
 
             method: "delete",
 
@@ -141,10 +126,10 @@ function Customer() {
         fetchdata()
 
     }
-    async function singleCustomer(id) {
+    async function singleStore(id) {
         console.log(id)
 
-        const data = await fetch(`https://localhost:7144/api/customer/singlecustomer/${id}`, {
+        const data = await fetch(`https://localhost:7144/api/store/singlestore/${id}`, {
 
             method: "get",
 
@@ -164,8 +149,8 @@ function Customer() {
         const res = await data.json()
         console.log(res)
 
-        setSt({
-            id: res.customerId,
+        setUpdate({
+            id: res.storeId,
             name: res.name,
             address: res.address
         })
@@ -178,16 +163,16 @@ function Customer() {
 
 
     function getSingle(id, fun) {
-        singleCustomer(id)
-        //setModalShow(true)
+        singleStore(id)
+        
         fun()
     }
 
 
-    const deleteCustomer = (id) => {
+    const deleteStore = (id) => {
 
         dispatch({ type: 'open', size: 'small' })
-        CustomerId.current = id
+        StoreId.current = id
         
 
     }
@@ -202,13 +187,8 @@ function Customer() {
 
     useEffect(() => {
         fetchdata()
-       
 
     }, [])
-
-
-    
-
 
 
 
@@ -218,8 +198,8 @@ function Customer() {
         <div className='ui container'>
             <Button positive onClick={() =>
 
-                setCustomer(true)}>
-                Create Customer
+                setModal(true)}>
+                Create Store
             </Button>
             <table className="ui celled table">
                 <thead className="">
@@ -233,26 +213,27 @@ function Customer() {
                 <tbody className="">
 
                     {
-                        arr.map((val) => {
+                        store.map((val) => {
                             return (
 
-                                <tr key={val.customerId} className="">
+                                <tr key={val.storeId} className="">
                                     <td className="">{val.name}</td>
                                     <td className="">{val.address}</td>
                                     <td className=""><Button style={{backgroundColor:'orange'}} onClick={() =>
 
-                                        getSingle(val.customerId, () => setModalShow(true))}>
-                                            <i className="fa-solid fa-pen-to-square" ></i> 
-                                            &nbsp; Edit</Button></td>
+                                        getSingle(val.storeId, () => setModalShow(true))}>
+                                            <i className="fa-solid fa-pen-to-square"></i>
+                                       &nbsp; Edit</Button></td>
 
 
-                                    <td className=""><Button style={{backgroundColor:'orangered'}} 
-                                    onClick={() =>{
-                                        deleteCustomer(val.customerId)
+                                    <td className=""><Button style={{backgroundColor:'orangered'}}
+                                     onClick={() =>{
+                                        deleteStore(val.storeId, val.name)
                                         setName({name:val.name})
-                                        }}>
+                                        
+                                     }}>
                                             <i className="fa-solid fa-trash"></i>
-                                       &nbsp; Delete
+                                     &nbsp;   Delete
                                     </Button></td>
                                 </tr>
                             )
@@ -264,24 +245,23 @@ function Customer() {
             </table>
 
             <DeleteModel
-            name={name.name}
-header={'Delete Customer'}
-            customerId={CustomerId.current}
+             name={name.name}
+             header={'Delete Store'}
 
-                delete={() => del(CustomerId.current)}
+                delete={() => del_Store(StoreId.current)}
                 open={open}
                 size={size}
                 onClose={() => dispatch({ type: 'close' })} />
 
-            <CreateCustomerModal
+            <CreateStoreModal
                 name={'Address'}
-                api={'customer'}
-                open={customer}
+                
+                open={modal}
                 size={'small'}
                 fetch={() => fetchdata()}
                 onClose={() =>
 
-                    setCustomer(false)} />
+                    setModal(false)} />
 
 
 
@@ -306,8 +286,8 @@ header={'Delete Customer'}
             >
                 <Modal.Header>Delete Your Account</Modal.Header>
                 <Modal.Content>
-                    <Form.Input fluid name="name" label="Name"  value={st.name} placeholder="Name" onChange={handleChange} />
-                    <Form.Input fluid name="address" label="Address" value={st.address} onChange={handleChange} placeholder="Address" />
+                    <Form.Input fluid name="name" label="Name" value={update.name} placeholder="Name" onChange={handleChange} />
+                    <Form.Input fluid name="address" label="Address" value={update.address} onChange={handleChange} placeholder="Address" />
                 </Modal.Content>
                 {/* <Modal.Description>
                     <div className='contact_form_class'>
@@ -317,7 +297,7 @@ header={'Delete Customer'}
                                 <i className="fa-solid fa-envelope"></i>
                             </div>
                             <div className="form-group  flex-grow-1">
-                                <input type="text" value={st.name} name="name" onChange={handleChange} />
+                                <input type="text" value={update.name} name="name" onChange={handleChange} />
                                 <label >Name </label>
                             </div>
 
@@ -329,7 +309,7 @@ header={'Delete Customer'}
                                 <i className="fa-solid fa-envelope"></i>
                             </div>
                             <div className="form-group  flex-grow-1">
-                                <input type="text" value={st.address} name="address" onChange={handleChange} />
+                                <input type="text" value={update.address} name="address" onChange={handleChange} />
                                 <label >Address </label>
                             </div>
 
@@ -346,7 +326,7 @@ header={'Delete Customer'}
                     </Button>
                     <Button positive onClick={() =>
 
-                        updateCustomer()}>
+                        updateStore()}>
                         Yes
                     </Button>
                 </Modal.Actions>
@@ -357,10 +337,9 @@ header={'Delete Customer'}
         </ div>
 
     );
-
 }
 
-export default Customer
+export default Store
 
 
 

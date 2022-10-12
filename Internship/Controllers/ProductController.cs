@@ -41,7 +41,7 @@ namespace Internship.Controllers
 
         // GET: Get single project--------->
 
-        [HttpGet("singlproduct/{id:int}")]
+        [HttpGet("singleproduct/{id:int}")]
         public async Task<ActionResult> Details([FromRoute] int? id)
         {
             try

@@ -18,7 +18,7 @@ namespace Internship.Controllers
         // GET: Get all sales----------->
 
         [HttpGet("getall")]
-        public IActionResult GetAllCustomer()
+        public IActionResult GetAllSales()
         {
             try
             {
@@ -137,10 +137,12 @@ namespace Internship.Controllers
         }
 
         //DELETE: Delete Single Sale--------->
-
+        
         [HttpDelete("delete/{id:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int? id)
+
+        public async Task<IActionResult> Dell([FromRoute] int? id)
         {
+            
             try
             {
                 if (id != null)
@@ -152,11 +154,11 @@ namespace Internship.Controllers
                         return Ok("Deleted Successfully");
                     }
                     return NotFound($"{id} Not found");
-                }
+    }
                 else
                 {
                     return BadRequest("No Valid");
-                }
+}
 
             }
             catch (Exception)

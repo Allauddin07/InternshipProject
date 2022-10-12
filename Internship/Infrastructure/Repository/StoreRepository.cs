@@ -24,7 +24,7 @@ namespace BackendApp.Infrastructure.Repository
 
         public async Task<bool> DeleteAsync(int? id)
         {
-            var store = await _dbCntxt.stores.FindAsync(id);
+            var store = await _dbCntxt.stores.Include(x => x.Sales).FirstOrDefaultAsync(x => x.StoreId == id);
 
             if (store != null)
             {
@@ -36,7 +36,7 @@ namespace BackendApp.Infrastructure.Repository
 
         public async Task<ICollection<Store>> GetAllAsync()
         {
-            var store = _dbCntxt.stores.Include(prop=>prop.Sales).ToList();
+            var store = await _dbCntxt.stores.Include(prop=>prop.Sales).ToListAsync();
 
             if (store != null)
             {
