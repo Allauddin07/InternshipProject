@@ -1,7 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import CreateStoreModal from './CreateStoreModal';
+
 import DeleteModel from './DeleteModel';
 import { Button, Modal, Form } from 'semantic-ui-react'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CreateModal from './CreateModal'
+import UpdateModal from './UpdateModal';
+import Pagination from './Pagination';
+import { Select, Menu } from 'semantic-ui-react'
+
+
+
 
 function exampleReducer(state, action) {
     switch (action.type) {
@@ -13,73 +22,45 @@ function exampleReducer(state, action) {
             throw new Error('Unsupported action...')
     }
 }
-function Store()
-{
+function Store() {
+
+    // will store single Store Id
     const StoreId = useRef();
-    const [name, setName]= useState({name:null})
+
+    //Declare name variable to hold store Name
+    const [name, setName] = useState({ name: null })
+
+    //Declare store variable to hold all store
     const [store, setStore] = useState([])
+
+     //Declare update variable to hold updated value of single store
     const [update, setUpdate] = useState({
         id: null,
         name: null,
         address: null
     })
 
+    // //Declare modalShow variable to show createModalShow
     const [modalShow, setModalShow] = useState(false);
 
+     // //Declare modalShow variable to show updateModalshow
     const [modal, setModal] = useState(false)
 
 
-    const handleChange = (e) => {
+// this function will show Deleted Message if store is Deleted
+    const error = (mg) => toast.error(mg, {
+        position: "top-center",
+        autoClose: 2000
+    });
 
 
 
-        setUpdate((update) => {
+  
 
-            return {
-                ...update,
-                [e.target.name]: e.target.value
-            }
-
-        })
-
-
-
-    }
-
-    async function updateStore() {
-
-        const body = {
-            name: update.name,
-            address: update.address
-        }
-
-        const data = await fetch(`https://localhost:7144/api/store/update/${update.id}`, {
-
-            method: "put",
-
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Credentials": true,
-                'Access-Control-Allow-Origin': '*',
-
-
-
-            },
-            body: JSON.stringify(body)
-        })
-
-        const res = await data.json()
-        console.log(res)
-        //setarr(res)
-        fetchdata()
-        setModalShow(false)
-
-    }
-
+    //----=this function will fetch all store from server-----------
     async function fetchdata() {
 
-        const data = await fetch('https://localhost:7144/api/store/getall', {
+        const data = await fetch('https://internshipproject.azurewebsites.net/api/store/getall', {
 
             method: "get",
 
@@ -95,8 +76,7 @@ function Store()
         })
 
         const res = await data.json()
-        console.log(res.result)
-        setStore(res.result)
+        setStore(res.result.reverse())
 
     }
 
@@ -106,7 +86,7 @@ function Store()
 
 
 
-        const data = await fetch(`https://localhost:7144/api/store/delete/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/store/delete/${id}`, {
 
             method: "delete",
 
@@ -122,14 +102,14 @@ function Store()
         })
 
         const res = await data.json()
-        console.log(res.result)
         fetchdata()
+        error(res)
 
     }
     async function singleStore(id) {
         console.log(id)
 
-        const data = await fetch(`https://localhost:7144/api/store/singlestore/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/store/singlestore/${id}`, {
 
             method: "get",
 
@@ -164,7 +144,7 @@ function Store()
 
     function getSingle(id, fun) {
         singleStore(id)
-        
+
         fun()
     }
 
@@ -173,7 +153,7 @@ function Store()
 
         dispatch({ type: 'open', size: 'small' })
         StoreId.current = id
-        
+
 
     }
 
@@ -184,158 +164,163 @@ function Store()
     })
     const { open, size } = state
 
+// ----------calling fecthdate in useEffect-------------
 
     useEffect(() => {
         fetchdata()
 
     }, [])
 
+    //.-----------The below code are for Pagination -----------
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [dropdown, setDropdown] = useState(10)
+    const PER_PAGE = dropdown;
+    const offset = currentPage * PER_PAGE;
+    const currentPageData = store
+        .slice(offset, offset + PER_PAGE)
+        ;
+    const pageCount = Math.ceil(store.length / PER_PAGE);
+
+    function handlePageClick({ selected: selectedPage }) {
+        setCurrentPage(selectedPage);
+    }
+
+    const options = [
+        { key: 1, text: 'Show 5 items', value: 5 },
+        { key: 2, text: 'Show 10 items ', value: 10 },
+        { key: 3, text: 'Show 15 items ', value: 15 },
+    ]
+
+
 
 
 
     return (
+        <>
+            <ToastContainer position="top-center"
+                autoClose={2000} />
 
-        <div className='ui container'>
-            <Button positive onClick={() =>
+            <div className='ui container'>
+                <Button positive onClick={() =>
 
-                setModal(true)}>
-                Create Store
-            </Button>
-            <table className="ui celled table">
-                <thead className="">
-                    <tr className="">
-                        <th className="">Name</th>
-                        <th className="">Address</th>
-                        <th className="">Action</th>
-                        <th className="">Action</th>
-                    </tr>
-                </thead>
-                <tbody className="">
+                    setModal(true)}>
+                    Create Store
+                </Button>
+                <table className="ui celled table">
+                    <thead className="">
+                        <tr className="">
+                            <th className="">Name</th>
+                            <th className="">Address</th>
+                            <th className="">Action</th>
+                            <th className="">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="">
 
-                    {
-                        store.map((val) => {
-                            return (
+                        {
+                            currentPageData.map((val) => {
+                                return (
 
-                                <tr key={val.storeId} className="">
-                                    <td className="">{val.name}</td>
-                                    <td className="">{val.address}</td>
-                                    <td className=""><Button style={{backgroundColor:'orange'}} onClick={() =>
+                                    <tr key={val.storeId} className="">
+                                        <td className="">{val.name}</td>
+                                        <td className="">{val.address}</td>
+                                        <td className=""><Button style={{ backgroundColor: 'orange' }} onClick={() =>
 
-                                        getSingle(val.storeId, () => setModalShow(true))}>
+                                            getSingle(val.storeId, () => setModalShow(true))}>
                                             <i className="fa-solid fa-pen-to-square"></i>
-                                       &nbsp; Edit</Button></td>
+                                            &nbsp; Edit</Button></td>
 
 
-                                    <td className=""><Button style={{backgroundColor:'orangered'}}
-                                     onClick={() =>{
-                                        deleteStore(val.storeId, val.name)
-                                        setName({name:val.name})
-                                        
-                                     }}>
+                                        <td className=""><Button style={{ backgroundColor: 'orangered' }}
+                                            onClick={() => {
+                                                deleteStore(val.storeId, val.name)
+                                                setName({ name: val.name })
+
+                                            }}>
                                             <i className="fa-solid fa-trash"></i>
-                                     &nbsp;   Delete
-                                    </Button></td>
-                                </tr>
-                            )
-                        })
-                    }
+                                            &nbsp;   Delete
+                                        </Button></td>
+                                    </tr>
+                                )
+                            })
+                        }
 
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
 
-            <DeleteModel
-             name={name.name}
-             header={'Delete Store'}
+                  {/* pagination code */}
 
-                delete={() => del_Store(StoreId.current)}
-                open={open}
-                size={size}
-                onClose={() => dispatch({ type: 'close' })} />
-
-            <CreateStoreModal
-                name={'Address'}
-                
-                open={modal}
-                size={'small'}
-                fetch={() => fetchdata()}
-                onClose={() =>
-
-                    setModal(false)} />
-
-
-
-
-
-
-
-
-
-
-
-
-
-            <Modal
-                size={'small'}
-                open={modalShow}
-                onClose={() =>
-
-                    setModalShow(false)}
-
-
-            >
-                <Modal.Header>Delete Your Account</Modal.Header>
-                <Modal.Content>
-                    <Form.Input fluid name="name" label="Name" value={update.name} placeholder="Name" onChange={handleChange} />
-                    <Form.Input fluid name="address" label="Address" value={update.address} onChange={handleChange} placeholder="Address" />
-                </Modal.Content>
-                {/* <Modal.Description>
-                    <div className='contact_form_class'>
-                        <div className='d-flex mb-5 mt-3'>
-
-                            <div className='align-self-center '>
-                                <i className="fa-solid fa-envelope"></i>
-                            </div>
-                            <div className="form-group  flex-grow-1">
-                                <input type="text" value={update.name} name="name" onChange={handleChange} />
-                                <label >Name </label>
-                            </div>
-
-                        </div>
-
-                        <div className='d-flex mb-5 mt-3'>
-
-                            <div className='align-self-center '>
-                                <i className="fa-solid fa-envelope"></i>
-                            </div>
-                            <div className="form-group  flex-grow-1">
-                                <input type="text" value={update.address} name="address" onChange={handleChange} />
-                                <label >Address </label>
-                            </div>
-
-                        </div>
-
+                <div className='showItem'>
+                    <div className='dropdown'>
+                        <Menu compact>
+                            <Select onChange={(e, data) => {
+                                setDropdown(data.value)
+                            }} value={dropdown} options={options} item />
+                        </Menu>
                     </div>
 
-                </Modal.Description> */}
-                <Modal.Actions>
-                    <Button negative onClick={() =>
 
-                        setModalShow(false)}>
-                        No
-                    </Button>
-                    <Button positive onClick={() =>
+                    <Pagination
 
-                        updateStore()}>
-                        Yes
-                    </Button>
-                </Modal.Actions>
-            </Modal>
+                        handlePageClick={handlePageClick}
+                        pageCount={pageCount}
+                    />
+                </div>
+
+                <DeleteModel
+                    name={name.name}
+                    header={'Delete Store'}
+
+                    delete={() => del_Store(StoreId.current)}
+                    open={open}
+                    size={size}
+                    onClose={() => dispatch({ type: 'close' })} />
+
+               
+
+
+                <CreateModal
+                    name={'Store'}
+                    fieldName={"address"}
+                    entity={'store'}
+                    onShow={() => setModal(true)}
+                    open={modal}
+                    size={'small'}
+                    fetch={() => fetchdata()}
+                    onClose={() =>
+
+                        setModal(false)} />
 
 
 
-        </ div>
 
+
+
+                <UpdateModal
+                    fieldName={"address"}
+                    entity={'store'}
+                    name={'Store'}
+                    obj={update}
+                    fetch={() => fetchdata()}
+                    size={'small'}
+                    open={modalShow}
+                    onClose={() =>
+
+                        setModalShow(false)}
+                />
+
+
+
+
+
+
+
+
+
+            </ div>
+        </>
     );
 }
 

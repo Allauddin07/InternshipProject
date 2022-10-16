@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CreateSaleModal from './CreateSaleModal';
 import DeleteModel from './DeleteModel';
-import { Button, Modal, Select, Form } from 'semantic-ui-react'
-import { format } from 'date-fns'
+import { Button, Form } from 'semantic-ui-react'
 import DateFormate from './Date'
-import dateF from './DateFormate'
-import DatePicker from "react-datepicker";
-//import DatePicker from "react-datepicker";  
 import "react-datepicker/dist/react-datepicker.css";
-import UpdateModal from './UpdateModal';
+import UpdateSalesModal from './UpdateSalesModal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Pagination from './Pagination';
+import { Select, Menu } from 'semantic-ui-react'
 
 function exampleReducer(state, action) {
     switch (action.type) {
@@ -22,29 +22,42 @@ function exampleReducer(state, action) {
 }
 
 function Sales() {
+
+    //--------Created CustomerId Variable to store CustomerId-------
     const SaleId = useRef();
 
+    //--------Created Name Variable to store Customer Name-------
+    const [name, setName] = useState({ name: null })
 
-
-
-    const [name, setName]= useState({name:null})
-
+    //--------Created arr State to hold List of all Customer-------
     const [sale, setSale] = useState([])
+
+    //----------Declare StatDate Variable to store date value
     const [startDate, setStartDate] = useState(new Date());
+
+    //----------Declare customer Variable to store customaer value
     const [customer, setCustomer] = useState([])
+
+    //----------Declare store Variable to hold store value
     const [store, setStore] = useState([])
+
+    //----------Declare product Variable to store product value
     const [product, setProduct] = useState([])
-    const [customerdata, setCustomerData] = useState({
-        customerId: null
-    })
-    const [productdata, setProductData] = useState({
-        productId: null
-    })
-    const [storedata, setStoreData] = useState({
-        storeId: null
-    })
+
+    // -------------Success message if user created or updated------------
+    const success = (mg) => toast.success(mg, {
+        position: "top-center",
+        autoClose: 2000
+    });
+
+    //----------This function will show deleted message--------
+    const error = (mg) => toast.error(mg, {
+        position: "top-center",
+        autoClose: 2000
+    });
 
 
+    //----------Declare update Variable to store sale updated value
     const [update, setUpdate] = useState({
         id: null,
         customerId: null,
@@ -53,45 +66,17 @@ function Sales() {
         product: null,
         storeId: null,
         store: null,
-        // dateSold: new Date()
+
     })
 
-    const [cust, setCust] = useState({ cust: null })
-    const [prod, setProd] = useState({ prod: null })
-    const [stor, setStor] = useState({ stor: null })
-
-    console.log(cust.cust)
-    console.log(prod.prod)
-    console.log(stor.stor)
-
-    console.log(update)
-
-
-
-    //console.log(dateF(new Date(update.dateSold)))
-
+    //----------Declare modalshow Variable to show Create Modal
     const [modalShow, setModalShow] = useState(false);
+
+    //----------Declare modal Variable to show updateModal
 
     const [modal, setModal] = useState(false)
 
-
-    const handleChange = (e) => {
-
-
-
-        setUpdate((update) => {
-
-            return {
-                ...update,
-                [e.target.name]: e.target.value
-            }
-
-        })
-
-
-
-    }
-
+    // ----------this function will update the Sale------------
     async function updateSale() {
 
         const body = {
@@ -101,7 +86,7 @@ function Sales() {
             dateSold: startDate
         }
 
-        const data = await fetch(`https://localhost:7144/api/sales/update/${update.id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/sales/update/${update.id}`, {
 
 
             method: "put",
@@ -119,16 +104,16 @@ function Sales() {
         })
 
         const res = await data.json()
-        console.log(res)
-        //setarr(res)
         fetchdata('sales', setSale)
         setModalShow(false)
+        success(res)
 
     }
 
+    // ----------this function will fetch all sales from server------------
     async function fetchdata(dt, fun) {
 
-        const data = await fetch(`https://localhost:7144/api/${dt}/getall`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/${dt}/getall`, {
 
             method: "get",
 
@@ -144,24 +129,17 @@ function Sales() {
         })
 
         const res = await data.json()
-        console.log(res)
-        fun(res.result)
+
+        fun(res.result.reverse())
 
     }
 
-
-
-
-
-
-
-
-
+    // ----------this function will delete the single Sale------------
     async function del_Sale(id) {
 
 
 
-        const data = await fetch(`https://localhost:7144/api/sales/delete/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/sales/delete/${id}`, {
 
             method: "delete",
 
@@ -180,11 +158,15 @@ function Sales() {
         console.log(res.result)
         fetchdata('sales', setSale)
 
+        error(res)
+
     }
+
+    // ----------this function will fetch detail of the single Sale------------
     async function singleSale(id) {
         console.log(id)
 
-        const data = await fetch(`https://localhost:7144/api/sales/singlesale/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/sales/singlesale/${id}`, {
 
             method: "get",
 
@@ -222,14 +204,14 @@ function Sales() {
 
     }
 
-
+    // called singleSale function here--------
     function getSingle(id, fun) {
         singleSale(id)
         //setModalShow(true)
         fun()
     }
 
-
+// callled del_Sale function here----------
     const deleteSale = (id) => {
 
         dispatch({ type: 'open', size: 'small' })
@@ -250,147 +232,169 @@ function Sales() {
         fetchdata('customer', setCustomer)
         fetchdata('product', setProduct)
         fetchdata('store', setStore)
-        // fetchCustomer('customer', setCustomer)
-        // fetchProduct('pro')
-        // fetchStore()
+
 
     }, [])
 
-    const CustomerOptions = customer.map((val) => {
-        return {
-            key: val.customerId,
-            value: val.customerId,
-            text: val.name
-        }
-    })
 
 
-    const ProductOptions = product.map((val) => {
-        return {
-            key: val.productId,
-            value: val.productId,
-            text: val.name
-        }
-    })
 
-    const StoreOptions = store.map((val) => {
-        return {
-            key: val.storeId,
-            value: val.storeId,
-            text: val.name
-        }
-    })
+
+    // -----------Pagination Code------------------
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [dropdown, setDropdown] = useState(10)
+    const PER_PAGE = dropdown;
+    const offset = currentPage * PER_PAGE;
+    const currentPageData = sale
+        .slice(offset, offset + PER_PAGE)
+        ;
+    const pageCount = Math.ceil(sale.length / PER_PAGE);
+
+    function handlePageClick({ selected: selectedPage }) {
+        setCurrentPage(selectedPage);
+    }
+
+    const options = [
+        { key: 1, text: 'Show 5 items', value: 5 },
+        { key: 2, text: 'Show 10 items ', value: 10 },
+        { key: 3, text: 'Show 15 items ', value: 15 },
+    ]
+
+
 
 
 
 
     return (
+        <>
+            <ToastContainer position="top-center"
+                autoClose={2000} />
+            <div className='ui container'>
+                <Button positive onClick={() =>
 
-        <div className='ui container'>
-            <Button positive onClick={() =>
+                    setModal(true)}>
+                    Create Sale
+                </Button>
+                <table className="ui celled table">
+                    <thead className="">
+                        <tr className="">
+                            <th className="">Customer</th>
+                            <th className="">Product</th>
+                            <th className="">Store</th>
+                            <th className="">DateSold</th>
+                            <th className="">Action</th>
+                            <th className="">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="">
 
-                setModal(true)}>
-                Create Sale
-            </Button>
-            <table className="ui celled table">
-                <thead className="">
-                    <tr className="">
-                        <th className="">Customer</th>
-                        <th className="">Product</th>
-                        <th className="">Store</th>
-                        <th className="">DateSold</th>
-                        <th className="">Action</th>
-                        <th className="">Action</th>
-                    </tr>
-                </thead>
-                <tbody className="">
+                        {
+                            currentPageData.map((val) => {
+                                return (
 
-                    {
-                        sale.map((val) => {
-                            return (
+                                    <tr key={val.saleId} className="">
+                                        <td className="">{val.customer}</td>
+                                        <td className="">{val.product}</td>
+                                        <td className="">{val.store}</td>
+                                        <td className="">{DateFormate(new Date(val.dateSold))}</td>
+                                        <td className=""><Button style={{ backgroundColor: 'orange' }} onClick={() =>
 
-                                <tr key={val.saleId} className="">
-                                    <td className="">{val.customer}</td>
-                                    <td className="">{val.product}</td>
-                                    <td className="">{val.store}</td>
-                                    <td className="">{DateFormate(new Date(val.dateSold))}</td>
-                                    <td className=""><Button style={{ backgroundColor: 'orange' }} onClick={() =>
+                                            getSingle(val.saleId, () => setModalShow(true))}>
+                                            <i className="fa-solid fa-pen-to-square"></i>
 
-                                        getSingle(val.saleId, () => setModalShow(true))}>
-                                        <i className="fa-solid fa-pen-to-square"></i>
-
-                                        &nbsp; Edit</Button></td>
-
-
-                                    <td className=""><Button style={{ backgroundColor: 'orangered' }} 
-                                    onClick={() =>{
-                                        deleteSale(val.saleId)
-                                        setName({name:val.saleId})
-                                        
-                                    }}>
-                                        <i className="fa-solid fa-trash"></i>
-                                        &nbsp;      Delete
-                                    </Button></td>
-                                </tr>
-                            )
-                        })
-                    }
+                                            &nbsp; Edit</Button></td>
 
 
-                </tbody>
-            </table>
+                                        <td className=""><Button style={{ backgroundColor: 'orangered' }}
+                                            onClick={() => {
+                                                deleteSale(val.saleId)
+                                                setName({ name: val.saleId })
 
-             {/*-----------Deleting Modal---------- */}
-            <DeleteModel
-            name={`SaleID ${name.name}`}
-            header={'Delete Sale'}
-                delete={() => del_Sale(SaleId.current)}
-                open={open}
-                size={size}
-                onClose={() => dispatch({ type: 'close' })} />
-
-            <CreateSaleModal
-                customer={customer}
-                product={product}
-                store={store}
-                open={modal}
-                size={'small'}
-                fetch={() => fetchdata('sales', setSale)}
-                onClose={() =>
-                    setModal(false)} />
+                                            }}>
+                                            <i className="fa-solid fa-trash"></i>
+                                            &nbsp;      Delete
+                                        </Button></td>
+                                    </tr>
+                                )
+                            })
+                        }
 
 
+                    </tbody>
+                </table>
 
 
+                <div className='showItem'>
+                    <div className='dropdown'>
+                        <Menu compact>
+                            <Select onChange={(e, data) => {
+                                setDropdown(data.value)
+                            }} value={dropdown} options={options} item />
+                        </Menu>
+                    </div>
 
 
+                    <Pagination
 
+                        handlePageClick={handlePageClick}
+                        pageCount={pageCount}
+                    />
+                </div>
 
-            <UpdateModal
-                as={Form}
-                size={'small'}
-                open={modalShow}
-                customer={customer}
-                product={product}
+                {/*-----------Deleting Modal---------- */}
+                <DeleteModel
+                    name={`SaleID ${name.name}`}
+                    header={'Delete Sale'}
+                    delete={() => del_Sale(SaleId.current)}
+                    open={open}
+                    size={size}
+                    onClose={() => dispatch({ type: 'close' })} />
 
-                store={store}
-                update={update}
-                onClose={() =>
-
-                    setModalShow(false)}
-
-                updateSale={updateSale}
-                setUpdate={setUpdate}
-                startDate={startDate}
-                setStartDate={setStartDate}
-            />
+                <CreateSaleModal
+                    customer={customer}
+                    product={product}
+                    store={store}
+                    open={modal}
+                    size={'small'}
+                    onShow={() => setModal(true)}
+                    fetch={() => fetchdata('sales', setSale)}
+                    onClose={() =>
+                        setModal(false)} />
 
 
 
 
 
 
-        </ div>
+
+
+                <UpdateSalesModal
+                    as={Form}
+                    size={'small'}
+                    open={modalShow}
+                    customer={customer}
+                    product={product}
+
+                    store={store}
+                    update={update}
+                    onClose={() =>
+
+                        setModalShow(false)}
+
+                    updateSale={updateSale}
+                    setUpdate={setUpdate}
+                    startDate={startDate}
+                    setStartDate={setStartDate}
+                />
+
+
+
+
+
+
+            </ div>
+        </>
 
     );
 

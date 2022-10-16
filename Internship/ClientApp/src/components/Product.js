@@ -1,8 +1,16 @@
 ﻿import React, { useEffect, useRef, useState } from 'react';
 import DeleteModel from './DeleteModel'
-import { Button, Modal, Form } from 'semantic-ui-react'
+import { Button } from 'semantic-ui-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CreateModal from './CreateModal'
+import UpdateModal from './UpdateModal';
+import Pagination from './Pagination';
+import { Select, Menu } from 'semantic-ui-react'
 
-import CreateProductModal from './CreateProductModal';
+
+
+
 
 
 function exampleReducer(state, action) {
@@ -21,46 +29,40 @@ function exampleReducer(state, action) {
 
 function Product() {
 
+    //--------Created productId Variable to store ProductId-------
     const productId = useRef();
-    const [name, setName]= useState({name:null})
 
+    //--------Created Name Variable to store Product Name-------
+    const [name, setName] = useState({ name: null })
+
+    //--------Created arr State to hold List of all Product-------f
     const [arr, setarr] = useState([])
 
+    //--------Created modelshow State to show UpdateModal-------
     const [modalShow, setModalShow] = useState(false);
+
+    //--------Created modelshow State to show CreatedModal-------
     const [product, setProduct] = useState(false)
 
+    //--------Created st State to hold Deatil of single Product-------
     const [dt, setData] = useState({
         id: null,
         name: null,
         price: null
     })
 
-
-    const handleChange = (e) => {
-
-
-        setData((dt) => {
-
-            return {
-                ...dt,
-                [e.target.name]: e.target.value
-            }
-
-        })
+    //----------Deletion message function if Product is deleted-------
+    const error = (mg) => toast.error(mg, {
+        position: "top-center",
+        autoClose: 5000
+    });
 
 
-
-
-
-
-
-
-    }
-
+    //-----------This function will fetch single customer deatil---------------
     async function singleProduct(id) {
         console.log(id)
 
-        const data = await fetch(`https://localhost:7144/api/product/singleproduct/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/product/singleproduct/${id}`, {
 
             method: "get",
 
@@ -92,6 +94,8 @@ function Product() {
 
     }
 
+    //-----------Called singleCustomer Func in this function-------------
+
     function productDetail(id, show) {
 
         singleProduct(id)
@@ -99,49 +103,10 @@ function Product() {
 
     }
 
-
-    async function updateProduct() {
-
-        const body = {
-            name: dt.name,
-            price: dt.price
-        }
-
-        const data = await fetch(`https://localhost:7144/api/product/update/${dt.id}`, {
-
-            method: "put",
-
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Credentials": true,
-                'Access-Control-Allow-Origin': '*',
-
-
-
-            },
-            body: JSON.stringify(body)
-        })
-
-        const res = await data.json()
-        console.log(res)
-        //setarr(res)
-        fetchdata()
-        setData({
-            id: null,
-            name: null,
-            price: null
-        })
-        setModalShow(false)
-
-    }
-
-
-
-
+    // ----------This function will fetch all Product-------------
     async function fetchdata() {
 
-        const data = await fetch('https://localhost:7144/api/product/getall', {
+        const data = await fetch('https://internshipproject.azurewebsites.net/api/product/getall', {
 
             method: "get",
 
@@ -157,18 +122,15 @@ function Product() {
         })
 
         const res = await data.json()
-        console.log(res.result)
-        setarr(res.result)
+        setarr(res.result.reverse())
 
     }
 
 
+    // ----------This function will delete single Porduct-------------
+    async function del_product(id) {
 
-    async function del(id) {
-
-        console.log(id)
-
-        const data = await fetch(`https://localhost:7144/api/product/delete/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/product/delete/${id}`, {
 
             method: "delete",
 
@@ -184,186 +146,190 @@ function Product() {
         })
 
         const res = await data.json()
-        console.log(res.result)
+
         fetchdata()
+        error(res)
 
     }
 
 
-
+    //------Showing Delete Modal and storing id in ProductId----------
     const deleteProduct = (id) => {
 
         dispatch({ type: 'open', size: 'small' })
         productId.current = id
-       
+
 
     }
 
-
+//--------Created state for Delete Modal ------------------>
     const [state, dispatch] = React.useReducer(exampleReducer, {
         open: false,
         size: undefined,
     })
     const { open, size } = state
 
-
+ //---------Called fetch method in useEffect-----------
     useEffect(() => {
         fetchdata()
 
     }, [])
 
 
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [dropdown, setDropdown] = useState(10)
+    const PER_PAGE = dropdown;
+    const offset = currentPage * PER_PAGE;
+    const currentPageData = arr
+        .slice(offset, offset + PER_PAGE)
+        ;
+    const pageCount = Math.ceil(arr.length / PER_PAGE);
+
+    function handlePageClick({ selected: selectedPage }) {
+        setCurrentPage(selectedPage);
+    }
+
+    const options = [
+        { key: 1, text: 'Show 5 items', value: 5 },
+        { key: 2, text: 'Show 10 items ', value: 10 },
+        { key: 3, text: 'Show 15 items ', value: 15 },
+    ]
+
+
+
     return (
-        <div className='ui container'>
-            <Button positive onClick={() =>
+        <>
+            <ToastContainer position="top-center"
+                autoClose={5000} />
+            <div className='ui container'>
 
-                setProduct(true)}>
-                Create Product
-            </Button>
-            <table className="ui celled table">
-                <thead className="">
-                    <tr className="">
-                        <th className="">Name</th>
-                        <th className="">Price</th>
-                        <th className="">Action</th>
-                        <th className="">Action</th>
-                    </tr>
-                </thead>
-                <tbody className="">
+                <Button positive onClick={() =>
 
-                    {
+                    setProduct(true)}>
+                    Create Product
+                </Button>
+                <table className="ui celled table">
+                    <thead className="">
+                        <tr className="">
+                            <th className="">Name</th>
+                            <th className="">Price</th>
+                            <th className="">Action</th>
+                            <th className="">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody className="">
 
-                        arr.map((val, id) => {
-                            return (
+                        {
 
-                                <tr key={val.productId} className="">
-                                    <td className="">{val.name}</td>
-                                    <td className="">{val.price}</td>
+                            currentPageData.map((val, id) => {
+                                return (
 
-
-
-
+                                    <tr key={val.productId} className="">
+                                        <td className="">{val.name}</td>
+                                        <td className="">{val.price}</td>
 
 
-                                    <td>
-                                        <Button style={{ backgroundColor: 'orange' }} onClick={() => productDetail(val.productId, setModalShow(true))}>
-                                            <i className="fa-solid fa-pen-to-square"></i>
 
-                                            &nbsp; Eidt
-                                        </Button>
-                                    </td>
 
-                                    <td>
-                                        <Button style={{ backgroundColor: 'orangered' }} onClick={() =>{
-                                            deleteProduct(val.productId)
-                                            setName({name:val.name})
-                                            
+
+
+                                        <td>
+                                            <Button style={{ backgroundColor: 'orange' }} onClick={() => productDetail(val.productId, setModalShow(true))}>
+                                                <i className="fa-solid fa-pen-to-square"></i>
+
+                                                &nbsp; Eidt
+                                            </Button>
+                                        </td>
+
+                                        <td>
+                                            <Button style={{ backgroundColor: 'orangered' }} onClick={() => {
+                                                deleteProduct(val.productId)
+                                                setName({ name: val.name })
+
                                             }}>
-                                            <i className="fa-solid fa-trash"></i>
-                                            &nbsp;  Delete
-                                        </Button>
-                                    </td>
+                                                <i className="fa-solid fa-trash"></i>
+                                                &nbsp;  Delete
+                                            </Button>
+                                        </td>
 
 
 
 
 
-                                </tr>
+                                    </tr>
 
-                            )
-                        })
-                    }
-
-
-                </tbody>
-            </table>
+                                )
+                            })
+                        }
 
 
+                    </tbody>
+                </table>
 
-
-            <DeleteModel
-                name={name.name}
-                header={'Delete Product'}
-
-                delete={() => del(productId.current)}
-                open={open}
-                size={size}
-                onClose={() => dispatch({ type: 'close' })} />
-
-            <CreateProductModal
-                fetch={() => fetchdata()}
-
-
-                open={product}
-                size={'small'}
-                onClose={() => setProduct(false)} />
-
-
-
-
-
-
-
-            <Modal
-                size={'small'}
-                open={modalShow}
-                onClose={() =>
-
-                    setModalShow(false)}
-
-
-            >
-                <Modal.Header>Delete Your Account</Modal.Header>
-                <Modal.Content>
-                    <Form.Input fluid name="name" label="Name" value={dt.name} placeholder="Name" onChange={handleChange} />
-                    <Form.Input fluid name="price" label="$ Price" value={dt.price} onChange={handleChange} placeholder="Price" />
-                </Modal.Content>
-                {/* <Modal.Description>
-                    <div NameName='contact_form_class'>
-                        <div className='d-flex mb-5 mt-3'>
-
-                            <div className='align-self-center '>
-                                <i className="fa-solid fa-envelope"></i>
-                            </div>
-                            <div className="form-group  flex-grow-1">
-                                <input type="text" value={dt.name} name="name" onChange={handleChange} />
-                                <label >Name </label>
-                            </div>
-
-                        </div>
-
-                        <div className='d-flex mb-5 mt-3'>
-
-                            <div className='align-self-center '>
-                                <i className="fa-solid fa-envelope"></i>
-                            </div>
-                            <div className="form-group  flex-grow-1">
-                                <input type="text" value={dt.price} name="price" onChange={handleChange} />
-                                <label >price </label>
-                            </div>
-
-                        </div>
-
+                <div className='showItem'>
+                    <div className='dropdown'>
+                        <Menu compact>
+                            <Select onChange={(e, data) => {
+                                setDropdown(data.value)
+                            }} value={dropdown} options={options} item />
+                        </Menu>
                     </div>
 
-                </Modal.Description> */}
-                <Modal.Actions>
-                    <Button negative onClick={() =>
 
-                        setModalShow(false)}>
-                        No
-                    </Button>
-                    <Button positive onClick={() =>
+                    <Pagination
 
-                        updateProduct()}>
-                        Yes
-                    </Button>
-                </Modal.Actions>
-            </Modal>
+                        handlePageClick={handlePageClick}
+                        pageCount={pageCount}
+                    />
+                </div>
 
 
 
-        </ div>
+
+                <DeleteModel
+                    name={name.name}
+                    header={'Delete Product'}
+                    delete={() => del_product(productId.current)}
+                    open={open}
+                    size={size}
+                    onClose={() => dispatch({ type: 'close' })} />
+
+
+                <CreateModal
+                    fetch={() => fetchdata()}
+                    entity={'product'}
+                    fieldName={"product"}
+                    name={'Product'}
+
+                    onShow={() => setProduct(true)}
+                    open={product}
+                    size={'small'}
+                    onClose={() => setProduct(false)} />
+
+
+
+                <UpdateModal
+                    fieldName={"price"}
+                    entity={'product'}
+                    name={'Product'}
+                    obj={dt}
+                    fetch={() => fetchdata()}
+                    size={'small'}
+                    open={modalShow}
+                    onClose={() =>
+                        setModalShow(false)}
+
+                />
+
+
+
+
+
+
+
+            </ div>
+        </>
     );
 
 }

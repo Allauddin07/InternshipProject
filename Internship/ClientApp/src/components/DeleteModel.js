@@ -1,11 +1,14 @@
 ﻿
-import { id } from 'date-fns/locale'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Button,  Modal } from 'semantic-ui-react'
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 
 const DeleteModel = (props) => {
+
+    
 
     return (
         <>
@@ -16,17 +19,17 @@ const DeleteModel = (props) => {
             >
                 <Modal.Header>{props.header}</Modal.Header>
                 <Modal.Content>
-                    <p>Are you sure you want to delete {props.name}  </p>
+                    <h4> Are you sure you want to delete  {props.name}  </h4>
                 </Modal.Content>
                 <Modal.Actions>
                     <Button negative onClick={()=>props.onClose()}>
-                        No
+                        Cancel
                     </Button>
                     <Button positive onClick={()=>{
                         props.delete()
                         props.onClose()
                     }}>
-                        Yes
+                        Delete
                     </Button>
                 </Modal.Actions>
             </Modal>

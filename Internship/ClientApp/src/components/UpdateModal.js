@@ -1,139 +1,193 @@
-import React, {useState} from 'react'
-import { Button, Modal, Select, Form } from 'semantic-ui-react'
-import DatePicker from "react-datepicker";
-
-const UpdateModal = (props) => {
-
-    // const [update, setUpdate] = useState({
-    //     id: null,
-    //     customerId: null,
-    //     customer: null,
-    //     productId: null,
-    //     product: null,
-    //     storeId: null,
-    //     store: null,
-    //     // dateSold: new Date()
-    // })
+import React, { useEffect, useState } from 'react'
+import { Modal, Form, Button, Message } from "semantic-ui-react";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
-    const CustomerOptions = props.customer.map((val) => {
-        return {
-            key: val.customerId,
-            value: val.customerId,
-            text: val.name
-        }
+function UpdateModal(props) {
+
+    console.log(props.obj)
+
+    //---------Creating Validation Error
+
+    const [error, setError] = useState({ error: '' })
+
+    //---------Storing input value 
+
+    const [object, setObject] = useState({
+        id: '',
+        name: '',
+        address: '',
+        price: ''
     })
 
+    console.log(object.name)
+    console.log(object.price)
+    console.log(object.address)
 
-    const ProductOptions = props.product.map((val) => {
-        return {
-            key: val.productId,
-            value: val.productId,
-            text: val.name
+    //---------Creating Success message if object is created successfully----
+
+    const success = (mg) => toast.success(mg, {
+        position: "top-center",
+        autoClose: 5000
+    });
+
+
+
+    //---------Input OnChnage method
+
+    const handleChange = (e) => {
+
+        setObject((prev) => {
+
+            return {
+                ...prev,
+                [e.target.name]: e.target.value
+            }
+
+        })
+
+    }
+
+    //----------updating object value------------
+    useEffect(() => {
+        setObject({
+            id: props.obj.id,
+            name: props.obj.name,
+            address: props.obj.address,
+            price: props.obj.price
+        })
+    }, [props.obj])
+
+
+
+
+
+    async function updateObject() {
+
+        if (props.fieldName == "address") {    
+
+                const body = {
+                    name: object.name,
+                    address: object.address
+                }
+
+                const data = await fetch(`https://internshipproject.azurewebsites.net/api/${props.entity}/update/${object.id}`, {
+
+                    method: "put",
+
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        "Access-Control-Allow-Credentials": true,
+                        'Access-Control-Allow-Origin': '*',
+
+                    },
+                    body: JSON.stringify(body)
+                })
+
+                const res = await data.json()
+                props.fetch()
+                setObject({
+                    id:'',
+                    name: '',
+                    address: '',
+                    price: ''
+                })
+                props.onClose()
+                success(res)    
+
         }
-    })
 
-    const StoreOptions = props.store.map((val) => {
-        return {
-            key: val.storeId,
-            value: val.storeId,
-            text: val.name
-        }
-    })
+        else {
+                const obj = {
+                    name: object.name,
+                    price: object.price
+                }
+                console.log(obj)
+                const data = await fetch(`https://internshipproject.azurewebsites.net/api/${props.entity}/update/${object.id}`, {
 
-    // async function updateSale() {
+                    method: "put",
 
-    //     const body = {
-    //         customerId: update.customerId,
-    //         productId: update.productId,
-    //         storeId:update.storeId,
-    //         dateSold:startDate
-    //     }
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        "Access-Control-Allow-Credentials": true,
+                        'Access-Control-Allow-Origin': '*',
 
-    //     const data = await fetch(`https://localhost:7144/api/sales/update/${update.id}`, {
+                    },
+                    body: JSON.stringify(obj)
+                })
+
+                const res = await data.json()
+                props.fetch()
+                setObject({
+                    id:'',
+                    name: '',
+                    address: '',
+                    price: ''
+                })
+                props.onClose()
+                success(res)
+
             
 
-    //         method: "put",
-
-    //         headers: {
-    //             'Accept': 'application/json',
-    //             'Content-Type': 'application/json',
-    //             "Access-Control-Allow-Credentials": true,
-    //             'Access-Control-Allow-Origin': '*',
+        }
 
 
 
-    //         },
-    //         body: JSON.stringify(body)
-    //     })
 
-    //     const res = await data.json()
-    //     console.log(res)
-    //     //setarr(res)
-    //     fetchdata('sales', setSale)
-    //     setModalShow(false)
 
-    // }
+
+
+
+    }
+
+
+
+
+
     return (
-        <div> <Modal
-            as={Form}
-            size={'small'}
-            open={props.open}
-            onClose={props.onClose}
+        <div>
+
+            <Modal
+                size={props.size}
+                open={props.open}
+                onClose={props.onClose}
 
 
-        >
-            <Modal.Header>Update Sale</Modal.Header>
-            <Modal.Content>
+            >
+                <Modal.Header>Update {props.name}</Modal.Header>
 
-                <Select style={{ marginBottom: '1.5rem' }} fluid placeholder='Select Customer' value={props.update.customerId} options={CustomerOptions}
-                    onChange={(e, data) => props.setUpdate((prev) => {
-                        return {
-                            ...prev,
-                            customerId: data.value
-                        }
-                    })} />
+                {error.error && <Message negative>
+                    <Message.Header>{error.error}</Message.Header>
 
-                <Select style={{ marginBottom: '1.5rem' }} fluid placeholder='Select Product' value={props.update.productId} name="product"
-                    onChange={(e, data) => props.setUpdate((prev) => {
-                        return {
-                            ...prev,
-                            productId: data.value
-                        }
-                    })
-                    } options={ProductOptions} />
-
-                <Select style={{ marginBottom: '1.5rem' }} fluid placeholder='Select Store' value={props.update.storeId} name="store"
-                    onChange={(e, data) => props.setUpdate((prev) => {
-                        return {
-                            ...prev,
-                            storeId: data.value
-                        }
-                    })} options={StoreOptions} />
-                <div className="form-group  flex-grow-1">
-
-                    <label >DateSold</label>
-                    <DatePicker fluid name="dateSold" selected={props.startDate} onChange={(date) => props.setStartDate(date)}
-                        dateFormat="dd/MM/yyyy"
-                    />
-                </div>
-
-            </Modal.Content>
+                </Message>}
 
 
-            <Modal.Actions>
-                <Button negative onClick={() =>
+                <Modal.Content>
+                    <Form.Input style={{ marginBottom: "1rem" }} fluid name="name" label="Name"
+                        value={object.name} placeholder="Name" onChange={handleChange} />
 
-                    props.onClose()}>
-                    No
-                </Button>
-                <Button positive onClick={() =>
+                    <Form.Input fluid name={props.fieldName === "address" ? "address" : "price"}
+                        label={props.fieldName == "address" ? "Address" : " $ Price"}
+                        value={props.fieldName == "address" ? object.address : object.price} onChange={handleChange}
+                        placeholder={props.fieldName == "address" ? "Address" : "Price"} />
+                </Modal.Content>
 
-                    props.updateSale()}>
-                    Yes
-                </Button>
-            </Modal.Actions>
-        </Modal>
+
+                <Modal.Actions>
+                    <Button negative onClick={() => {
+                        props.onClose()
+                        setError({ error: '' })
+                    }}>
+                        Cancel
+                    </Button>
+                    <Button positive onClick={() => updateObject()}>
+                        Update
+                    </Button>
+                </Modal.Actions>
+            </Modal>
         </div>
     )
 }

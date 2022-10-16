@@ -38,6 +38,7 @@ namespace BackendApp.Infrastructure.Repository
         public async Task<IEnumerable<Customer>> GetAllAsync()  
         {
             var customer =  await _dbCntxt.customers.Include(s=>s.sale).ToListAsync();
+            customer.Reverse();
            // var customer =  await _dbCntxt.customers.ToListAsync();
 
             //var sales = _dbCntxt.sales.ToList();

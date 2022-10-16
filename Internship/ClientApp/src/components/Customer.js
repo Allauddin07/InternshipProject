@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import CreateCustomerModal from './CreateCustomerModal';
 import DeleteModel from './DeleteModel';
-import { Button, Modal, Form } from 'semantic-ui-react'
+import { Button } from 'semantic-ui-react'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CreateModal from './CreateModal'
+import UpdateModal from './UpdateModal';
+import Pagination from './Pagination';
+import { Select, Menu } from 'semantic-ui-react'
 
-//import { updateLanguageServiceSourceFile } from 'typescript';
+
 
 
 function exampleReducer(state, action) {
@@ -19,82 +24,41 @@ function exampleReducer(state, action) {
 
 function Customer() {
 
+    //--------Created CustomerId Variable to store CustomerId-------
     const CustomerId = useRef();
-    const [name, setName]= useState({name:null})
 
-   // localStorage.setItem("id", JSON.stringify(CustomerId))
+    //--------Created Name Variable to store Customer Name-------
+    const [name, setName] = useState({ name: null })
 
-
-
-
-
+    //--------Created arr State to hold List of all Customer-------
     const [arr, setarr] = useState([])
 
-    console.log(arr)
-    
 
+    //----------Deletion message function if Customer is deleted-------
+    const error = (mg) => toast.error(mg, {
+        position: "top-center",
+        autoClose: 2000
+    });
+
+    //--------Created st State to hold Deatil of single Customer-------
     const [st, setSt] = useState({
         id: null,
         name: null,
         address: null
     })
 
+
+    //--------Created modelshow State to show UpdateModal-------
     const [modalShow, setModalShow] = useState(false);
+
+    //--------Created modelshow State to show CreatedModal-------
 
     const [customer, setCustomer] = useState(false)
 
-
-    const handleChange = (e) => {
-
-
-
-        setSt((st) => {
-
-            return {
-                ...st,
-                [e.target.name]: e.target.value
-            }
-
-        })
-
-
-
-    }
-
-    async function updateCustomer() {
-
-        const body = {
-            name: st.name,
-            address: st.address
-        }
-
-        const data = await fetch(`https://localhost:7144/api/customer/update/${st.id}`, {
-
-            method: "put",
-
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                "Access-Control-Allow-Credentials": true,
-                'Access-Control-Allow-Origin': '*',
-
-
-
-            },
-            body: JSON.stringify(body)
-        })
-
-        const res = await data.json()
-        console.log(res)
-        //setarr(res)
-        fetchdata()
-        setModalShow(false)
-
-    }
-
+    // ----------This function will fetch all customer-------------
     async function fetchdata() {
 
-        const data = await fetch("https://localhost:7144/api/customer/getall", {
+        const data = await fetch("https://internshipproject.azurewebsites.net/api/customer/getall", {
 
             method: "get",
 
@@ -110,18 +74,15 @@ function Customer() {
         })
 
         const res = await data.json()
-        console.log(res.result)
+        console.log(res.result.reverse())
         setarr(res.result)
 
     }
 
+    // ----------This function will delete single customer-------------
+    async function del_customer(id) {
 
-
-    async function del(id) {
-
-
-
-        const data = await fetch(`https://localhost:7144/api/customer/delete/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/customer/delete/${id}`, {
 
             method: "delete",
 
@@ -135,16 +96,27 @@ function Customer() {
 
             }
         })
-
         const res = await data.json()
-        console.log(res.result)
+
         fetchdata()
+        error(res)
 
     }
+
+    //------Showing Delete Modal and storing id in CustomerId----------
+    const deleteCustomer = (id) => {
+
+        dispatch({ type: 'open', size: 'small' })
+        CustomerId.current = id
+
+
+    }
+
+    //-----------This function will fetch single customer deatil---------------
     async function singleCustomer(id) {
         console.log(id)
 
-        const data = await fetch(`https://localhost:7144/api/customer/singlecustomer/${id}`, {
+        const data = await fetch(`https://internshipproject.azurewebsites.net/api/customer/singlecustomer/${id}`, {
 
             method: "get",
 
@@ -176,185 +148,174 @@ function Customer() {
 
     }
 
-
+    //-----------Called singleCustomer Func in this function-------------
     function getSingle(id, fun) {
         singleCustomer(id)
-        //setModalShow(true)
+
         fun()
     }
 
 
-    const deleteCustomer = (id) => {
 
-        dispatch({ type: 'open', size: 'small' })
-        CustomerId.current = id
-        
-
-    }
-
-
+    //--------Created state for Delete Modal ------------------>
     const [state, dispatch] = React.useReducer(exampleReducer, {
         open: false,
         size: undefined,
     })
     const { open, size } = state
 
-
+    //---------Called fetch method in useEffect-----------
     useEffect(() => {
         fetchdata()
-       
+
 
     }, [])
 
+    const [currentPage, setCurrentPage] = useState(0);
+    const [dropdown, setDropdown] = useState(10)
+    const PER_PAGE = dropdown;
+    const offset = currentPage * PER_PAGE;
+    const currentPageData = arr
+        .slice(offset, offset + PER_PAGE)
+        ;
+    const pageCount = Math.ceil(arr.length / PER_PAGE);
 
-    
+    function handlePageClick({ selected: selectedPage }) {
+        setCurrentPage(selectedPage);
+    }
+
+    const options = [
+        { key: 1, text: 'Show 5 items', value: 5 },
+        { key: 2, text: 'Show 10 items ', value: 10 },
+        { key: 3, text: 'Show 15 items ', value: 15 },
+    ]
+
+
 
 
 
 
 
     return (
+        <>
+            <ToastContainer position="top-center"
+                autoClose={2000} />
 
-        <div className='ui container'>
-            <Button positive onClick={() =>
 
-                setCustomer(true)}>
-                Create Customer
-            </Button>
-            <table className="ui celled table">
-                <thead className="">
-                    <tr className="">
-                        <th className="">Name</th>
-                        <th className="">Address</th>
-                        <th className="">Action</th>
-                        <th className="">Action</th>
-                    </tr>
-                </thead>
-                <tbody className="">
+            <div className='ui container'>
+                <Button positive onClick={() =>
 
-                    {
-                        arr.map((val) => {
-                            return (
+                    setCustomer(true)}>
+                    Create Customer
+                </Button>
+                <table className="ui celled table">
+                    <thead className="">
+                        <tr className="">
+                            <th className="">Name</th>
+                            <th className="">Address</th>
+                            <th className="">Action</th>
+                            <th className="">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody >
 
-                                <tr key={val.customerId} className="">
-                                    <td className="">{val.name}</td>
-                                    <td className="">{val.address}</td>
-                                    <td className=""><Button style={{backgroundColor:'orange'}} onClick={() =>
+                        {
+                            currentPageData.map((val) => {
+                                return (
 
-                                        getSingle(val.customerId, () => setModalShow(true))}>
-                                            <i className="fa-solid fa-pen-to-square" ></i> 
+                                    <tr key={val.customerId} className="">
+                                        <td className="">{val.name}</td>
+                                        <td className="">{val.address}</td>
+                                        <td className=""><Button style={{ backgroundColor: 'orange' }} onClick={() =>
+
+                                            getSingle(val.customerId, () => setModalShow(true))}>
+                                            <i className="fa-solid fa-pen-to-square" ></i>
                                             &nbsp; Edit</Button></td>
 
 
-                                    <td className=""><Button style={{backgroundColor:'orangered'}} 
-                                    onClick={() =>{
-                                        deleteCustomer(val.customerId)
-                                        setName({name:val.name})
-                                        }}>
+                                        <td className=""><Button style={{ backgroundColor: 'orangered' }}
+                                            onClick={() => {
+                                                deleteCustomer(val.customerId)
+                                                setName({ name: val.name })
+                                            }}>
                                             <i className="fa-solid fa-trash"></i>
-                                       &nbsp; Delete
-                                    </Button></td>
-                                </tr>
-                            )
-                        })
-                    }
+                                            &nbsp; Delete
+                                        </Button></td>
+                                    </tr>
+                                )
+                            })
+                        }
 
 
-                </tbody>
-            </table>
+                    </tbody>
+
+
+                </table>
+
+
+                <div className='showItem'>
+                    <div className='dropdown'>
+                        <Menu compact>
+                            <Select onChange={(e, data) => {
+                                setDropdown(data.value)
+                            }} value={dropdown} options={options} item />
+                        </Menu>
+                    </div>
+
+
+                    <Pagination
+
+                        handlePageClick={handlePageClick}
+                        pageCount={pageCount}
+                    />
+                </div>
+
+
+
+
+
+            </ div>
 
             <DeleteModel
-            name={name.name}
-header={'Delete Customer'}
-            customerId={CustomerId.current}
+                name={name.name}
+                header={'Delete Customer'}
+                customerId={CustomerId.current}
 
-                delete={() => del(CustomerId.current)}
+                delete={() => del_customer(CustomerId.current)}
                 open={open}
                 size={size}
                 onClose={() => dispatch({ type: 'close' })} />
 
-            <CreateCustomerModal
-                name={'Address'}
-                api={'customer'}
+
+
+
+            <CreateModal
+                fieldName={"address"}
+                entity={'customer'}
+                name={'Customer'}
                 open={customer}
                 size={'small'}
+                onShow={() =>
+                    setCustomer(true)}
                 fetch={() => fetchdata()}
                 onClose={() =>
 
                     setCustomer(false)} />
 
 
-
-
-
-
-
-
-
-
-
-
-
-            <Modal
+            <UpdateModal
+                fieldName={"address"}
+                entity={'customer'}
+                name={'Customer'}
+                obj={st}
+                fetch={() => fetchdata()}
                 size={'small'}
                 open={modalShow}
                 onClose={() =>
-
                     setModalShow(false)}
+            />
 
-
-            >
-                <Modal.Header>Delete Your Account</Modal.Header>
-                <Modal.Content>
-                    <Form.Input fluid name="name" label="Name"  value={st.name} placeholder="Name" onChange={handleChange} />
-                    <Form.Input fluid name="address" label="Address" value={st.address} onChange={handleChange} placeholder="Address" />
-                </Modal.Content>
-                {/* <Modal.Description>
-                    <div className='contact_form_class'>
-                        <div className='d-flex mb-5 mt-3'>
-
-                            <div className='align-self-center '>
-                                <i className="fa-solid fa-envelope"></i>
-                            </div>
-                            <div className="form-group  flex-grow-1">
-                                <input type="text" value={st.name} name="name" onChange={handleChange} />
-                                <label >Name </label>
-                            </div>
-
-                        </div>
-
-                        <div className='d-flex mb-5 mt-3'>
-
-                            <div className='align-self-center '>
-                                <i className="fa-solid fa-envelope"></i>
-                            </div>
-                            <div className="form-group  flex-grow-1">
-                                <input type="text" value={st.address} name="address" onChange={handleChange} />
-                                <label >Address </label>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </Modal.Description> */}
-                <Modal.Actions>
-                    <Button negative onClick={() =>
-
-                        setModalShow(false)}>
-                        No
-                    </Button>
-                    <Button positive onClick={() =>
-
-                        updateCustomer()}>
-                        Yes
-                    </Button>
-                </Modal.Actions>
-            </Modal>
-
-
-
-        </ div>
+        </>
 
     );
 
