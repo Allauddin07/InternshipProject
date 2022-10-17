@@ -19,7 +19,7 @@ namespace Internship.Controllers
         //Get all Projects-------------->
 
         [HttpGet("getall")]
-        public IActionResult GetAllCustomer()
+        public IActionResult GetAllProduct()
         {
             try
             {
