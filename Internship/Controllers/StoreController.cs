@@ -18,7 +18,7 @@ namespace Internship.Controllers
         // GET: Get All Stores--------->
 
         [HttpGet("getall")]
-        public IActionResult GetAllCustomer()
+        public IActionResult GetAllStore()
         {
             try
             {
